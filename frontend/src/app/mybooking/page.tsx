@@ -27,7 +27,7 @@ export default function MyBookingPage() {
             const res = await getAppointments(session.user.token)
             setBookings(res.data)
         } catch (error) {
-            console.error("Failed to fetch bookings:", error)
+            console.log("Failed to fetch bookings:", error)
         }
     } else {
         console.log("Waiting for session/token...")

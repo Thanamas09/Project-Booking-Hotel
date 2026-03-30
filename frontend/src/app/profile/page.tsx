@@ -15,7 +15,7 @@ export default function ProfilePage() {
         const res = await getUser(session.user.token)
         setUserData(res.data)
       } catch (err) {
-        console.error(err)
+        console.log(err)
       }
     }
 

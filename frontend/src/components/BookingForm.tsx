@@ -26,7 +26,7 @@ export default function BookingForm() {
             const data = await getHotels(token)
             setHotels(data.data)
         } catch (err) {
-            console.error(err)
+            console.log(err)
         }
     }
 

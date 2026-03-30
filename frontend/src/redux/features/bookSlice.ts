@@ -26,7 +26,7 @@ export const addBookingThunk = createAsyncThunk(
             const data = await res.json();
 
             if (!res.ok) {
-                console.error("Backend Error Details:", data);
+                console.log("Backend Error Details:", data);
                 return rejectWithValue(data.message || "Booking Fail!");
             }
             return data;

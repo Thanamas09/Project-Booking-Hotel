@@ -54,7 +54,7 @@ export default function HotelDetailPage({
         const res = await getHotel(id)
         setHotelDetail(res.data)
       } catch (err) {
-        console.error(err)
+        console.log(err)
       } finally {
         setLoading(false)
       }
@@ -89,7 +89,7 @@ export default function HotelDetailPage({
     const data = await res.json()
 
     if (!res.ok) {
-      console.error("Backend error:", data)
+      console.log("Backend error:", data)
       alert(data.message || "Submit rating failed")
       return
     }
@@ -98,7 +98,7 @@ export default function HotelDetailPage({
     setSubmitted(true)
 
   } catch (err) {
-    console.error("Fetch error:", err)
+    console.log("Fetch error:", err)
   }
 }
 

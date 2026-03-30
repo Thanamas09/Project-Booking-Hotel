@@ -24,7 +24,7 @@ export default function RegisterPage() {
                 alert(`Registration failed: ${errorData.message || "Please try again."}`);
             }
         } catch (err) {
-            console.error("Network Error:", err);
+            console.log("Network Error:", err);
             alert("Could not connect to the server. Please check your connection.");
         }
     };

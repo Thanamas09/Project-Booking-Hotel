@@ -21,7 +21,7 @@ export default function Banner() {
     try {
       await fetch(`${BACKEND_URL}/api/v1/auth/logout`, { method: "GET" });
     } catch (err) {
-      console.error("Backend logout failed", err);
+      console.log("Backend logout failed", err);
     }
 
     signOut({ callbackUrl: "/" });
