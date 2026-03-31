@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.route("/").get(getHotels).post(protect, authorize("admin"), createHotel);
 router.route("/:id").get(getHotel).put(protect, authorize("admin"), updateHotel).delete(protect, authorize("admin"), deleteHotel);
-router.post("/:id/rate",protect, authorize("admin", "user"), addRating);
+router.post("/:id/rate", protect, authorize("user"), addRating);
 
 module.exports = router;
