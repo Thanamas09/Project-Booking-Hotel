@@ -165,7 +165,7 @@ exports.updateAppointment = async (req, res, next) => {
         }
         appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
-            runvalidator: true
+            runValidators: true
         })
 
         res.status(200).json({ success: true, data: appointment });

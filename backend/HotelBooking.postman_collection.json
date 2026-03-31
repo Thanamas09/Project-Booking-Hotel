@@ -3,9 +3,44 @@
     "_postman_id": "a28a3953-105d-44fb-a5af-a1b10c18a5fe",
     "name": "HotelBooking",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "52470768",
-    "_collection_link": "https://go.postman.co/collection/52470768-a28a3953-105d-44fb-a5af-a1b10c18a5fe?source=collection_link"
+    "_exporter_id": "52470768"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "URL",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "hotelId",
+      "value": ""
+    },
+    {
+      "key": "appointmentId",
+      "value": ""
+    },
+    {
+      "key": "userEmail",
+      "value": "user1@gmail.com"
+    },
+    {
+      "key": "userPassword",
+      "value": "12345678"
+    }
+  ],
   "item": [
     {
       "name": "Hotel",
@@ -13,6 +48,9 @@
         {
           "name": "Get All Hotels",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -35,41 +73,37 @@
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "const response = pm.response.json();\r",
-                  "const new_hotel_ID = response.data.id\r",
-                  "\r",
-                  "pm.globals.set(\"hotel_ID\", new_hotel_ID);"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "pm.test('Status code is successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "pm.test('Response has hotel id', function () {",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.expect(response.data).to.have.property('_id');",
+                  "});",
+                  "",
+                  "if (response.data && response.data._id) {",
+                  "    pm.environment.set('hotelId', response.data._id);",
+                  "}"
+                ]
               }
             }
           ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json",
-                "description": "JSON Type",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"address\": \"{{$randomStreetAddress}}\",\r\n    \"district\": \"{{$randomStreetName}}\",\r\n    \"province\": \"{{$randomProductName}}\",\r\n    \"postalcode\": \"01101\",\r\n    \"tel\": \"{{$randomPhoneNumber}}\",\r\n    \"region\": \"Nonthaburi\"\r\n}",
+              "raw": "{\n  \"name\": \"{{$randomCompanyName}}\",\n  \"address\": \"{{$randomStreetAddress}}\",\n  \"district\": \"{{$randomCity}}\",\n  \"province\": \"Bangkok\",\n  \"postalcode\": \"10110\",\n  \"tel\": \"{{$randomPhoneNumber}}\",\n  \"region\": \"Central\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -93,18 +127,13 @@
         {
           "name": "Get single Hotel",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON Type",
-                "type": "text",
-                "disabled": true
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{URL}}/api/v1/hotels/:hotel_ID",
+              "raw": "{{URL}}/api/v1/hotels/{{hotelId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -112,13 +141,7 @@
                 "api",
                 "v1",
                 "hotels",
-                ":hotel_ID"
-              ],
-              "variable": [
-                {
-                  "key": "hotel_ID",
-                  "value": "{{hotel_ID}}"
-                }
+                "{{hotelId}}"
               ]
             }
           },
@@ -127,28 +150,17 @@
         {
           "name": "Update single Hotel",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json",
-                "description": "JSON Type",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"region\": \"London\"\r\n}",
+              "raw": "{\n  \"region\": \"South\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -156,7 +168,7 @@
               }
             },
             "url": {
-              "raw": "{{URL}}/api/v1/hotels/:hotel_ID",
+              "raw": "{{URL}}/api/v1/hotels/{{hotelId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -164,13 +176,7 @@
                 "api",
                 "v1",
                 "hotels",
-                ":hotel_ID"
-              ],
-              "variable": [
-                {
-                  "key": "hotel_ID",
-                  "value": "{{hotel_ID}}"
-                }
+                "{{hotelId}}"
               ]
             }
           },
@@ -179,28 +185,10 @@
         {
           "name": "Delete single Hotel",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON Type",
-                "type": "text",
-                "disabled": true
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{URL}}/api/v1/hotels/:hotel_ID",
+              "raw": "{{URL}}/api/v1/hotels/{{hotelId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -208,13 +196,43 @@
                 "api",
                 "v1",
                 "hotels",
-                ":hotel_ID"
-              ],
-              "variable": [
-                {
-                  "key": "hotel_ID",
-                  "value": "{{hotel_ID}}"
+                "{{hotelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rate Hotel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Very good hotel\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
+              }
+            },
+            "url": {
+              "raw": "{{URL}}/api/v1/hotels/{{hotelId}}/rate",
+              "host": [
+                "{{URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hotels",
+                "{{hotelId}}",
+                "rate"
               ]
             }
           },
@@ -231,28 +249,39 @@
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "pm.environment.set(\"token\", pm.response.json().token);"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "pm.test('Status code is successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "pm.test('Response has token', function () {",
+                  "    pm.expect(res).to.have.property('token');",
+                  "});",
+                  "",
+                  "if (res.token) {",
+                  "    pm.environment.set('token', res.token);",
+                  "}"
+                ]
               }
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json",
-                "description": "JSON Type",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"{{$randomFirstName}} {{$randomLastName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"password\": \"12345678\",\r\n    \"phone\": \"{{$randomPhoneNumber}}\",\r\n    \"role\": \"user\"\r\n}",
+              "raw": "{\n  \"name\": \"{{$randomFirstName}} {{$randomLastName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"password\": \"12345678\",\n  \"phone\": \"{{$randomPhoneNumber}}\",\n  \"role\": \"user\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -280,28 +309,44 @@
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "pm.environment.set(\"TOKEN\", pm.response.json().token);"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "pm.test('Status code is successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "pm.test('Response has token', function () {",
+                  "    pm.expect(res).to.have.property('token');",
+                  "});",
+                  "",
+                  "if (res.token) {",
+                  "    pm.environment.set('token', res.token);",
+                  "}"
+                ]
               }
             }
           ],
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json",
-                "description": "JSON Type",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\": \"user1@gmail.com\",\r\n    \"password\": \"12345678\"\r\n}"
+              "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{URL}}/api/v1/auth/login",
@@ -324,42 +369,19 @@
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "pm.environment.set(\"TOKEN\", null);"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "pm.environment.unset('token');"
+                ]
               }
             }
           ],
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
           "request": {
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             },
             "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON Type",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"email\": \"admin@gmail.com\",\r\n    \"password\": \"12345678\"\r\n}"
-            },
+            "header": [],
             "url": {
               "raw": "{{URL}}/api/v1/auth/logout",
               "host": [
@@ -377,33 +399,9 @@
         },
         {
           "name": "Get me",
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON Type",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": ""
-            },
+            "header": [],
             "url": {
               "raw": "{{URL}}/api/v1/auth/me",
               "host": [
@@ -425,30 +423,42 @@
       "name": "Appointment",
       "item": [
         {
-          "name": "Create new Appt( :id )",
+          "name": "Create new Appt (:hotelId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is successful', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const res = pm.response.json();",
+                  "pm.test('Response has appointment id', function () {",
+                  "    pm.expect(res).to.have.property('data');",
+                  "    pm.expect(res.data).to.have.property('_id');",
+                  "});",
+                  "",
+                  "if (res.data && res.data._id) {",
+                  "    pm.environment.set('appointmentId', res.data._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json",
-                "description": "JSON Type",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"checkinDate\": \"2026-03-5\",\r\n    \"checkoutDate\": \"2026-03-10\"\r\n}",
+              "raw": "{\n  \"checkinDate\": \"2026-04-10\",\n  \"checkoutDate\": \"2026-04-12\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -456,7 +466,7 @@
               }
             },
             "url": {
-              "raw": "{{URL}}/api/v1/appointments/69a51776d719e6229fe3ce90",
+              "raw": "{{URL}}/api/v1/appointments/{{hotelId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -464,7 +474,7 @@
                 "api",
                 "v1",
                 "appointments",
-                "69a51776d719e6229fe3ce90"
+                "{{hotelId}}"
               ]
             }
           },
@@ -473,16 +483,6 @@
         {
           "name": "Get All Appt",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
             "header": [],
             "url": {
@@ -502,40 +502,22 @@
         {
           "name": "Get Appt for Hotel",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON Type",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{URL}}/api/v1/appointments/?hotelId=69a514c95f715762a719869c",
+              "raw": "{{URL}}/api/v1/appointments?hotelId={{hotelId}}",
               "host": [
                 "{{URL}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "appointments",
-                ""
+                "appointments"
               ],
               "query": [
                 {
                   "key": "hotelId",
-                  "value": "69a514c95f715762a719869c"
+                  "value": "{{hotelId}}"
                 }
               ]
             }
@@ -546,19 +528,12 @@
           "name": "Get single Appt",
           "request": {
             "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{URL}}/api/v1/appointments/69a594188302310a6a623ade",
+              "raw": "{{URL}}/api/v1/appointments/{{appointmentId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -566,7 +541,7 @@
                 "api",
                 "v1",
                 "appointments",
-                "69a594188302310a6a623ade"
+                "{{appointmentId}}"
               ]
             }
           },
@@ -575,28 +550,17 @@
         {
           "name": "Update Appt",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json",
-                "description": "JSON Type",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"checkinDate\": \"2026-03-10\",\r\n    \"checkoutDate\": \"2026-03-12\"\r\n}",
+              "raw": "{\n  \"checkinDate\": \"2026-04-11\",\n  \"checkoutDate\": \"2026-04-13\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -604,7 +568,7 @@
               }
             },
             "url": {
-              "raw": "{{URL}}/api/v1/appointments/69a594188302310a6a623ade",
+              "raw": "{{URL}}/api/v1/appointments/{{appointmentId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -612,7 +576,7 @@
                 "api",
                 "v1",
                 "appointments",
-                "69a594188302310a6a623ade"
+                "{{appointmentId}}"
               ]
             }
           },
@@ -621,27 +585,10 @@
         {
           "name": "Delete Appt",
           "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{TOKEN}}",
-                  "type": "string"
-                }
-              ]
-            },
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "description": "JSON Type",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{URL}}/api/v1/appointments/69a594188302310a6a623ade",
+              "raw": "{{URL}}/api/v1/appointments/{{appointmentId}}",
               "host": [
                 "{{URL}}"
               ],
@@ -649,7 +596,7 @@
                 "api",
                 "v1",
                 "appointments",
-                "69a594188302310a6a623ade"
+                "{{appointmentId}}"
               ]
             }
           },
@@ -663,22 +610,14 @@
       "listen": "prerequest",
       "script": {
         "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": []
       }
     },
     {
       "listen": "test",
       "script": {
         "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
+        "exec": []
       }
     }
   ]
