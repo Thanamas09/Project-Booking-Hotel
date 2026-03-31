@@ -26,10 +26,22 @@ const AppointmentSchema = new mongoose.Schema({
     rating: {
         type: Number,
         min: 1,
-        max: 5
+        max: 5,
+        default: null
     },
     comment: {
-        type: String
+        type: String,
+        trim: true,
+        maxlength: [500, "Comment can not be more than 500 characters"],
+        default: ""
+    },
+    isRated: {
+        type: Boolean,
+        default: false
+    },
+    ratedAt: {
+        type: Date,
+        default: null
     }
 });
 

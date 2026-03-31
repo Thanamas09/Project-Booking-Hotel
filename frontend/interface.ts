@@ -7,13 +7,24 @@ export interface HotelItem {
     postalcode: string;
     tel: string;
     region: string;
+    rating: number;
+    ratingCount: number;
 }
 
 export interface BookingItem {
     _id: string;
     checkinDate: string;
     checkoutDate: string;
-    user: string;
+    user: string | {
+        _id?: string;
+        name?: string;
+        email?: string;
+        phone?: string;
+    };
     hotel: HotelItem;
     createdAt: string;
+    rating?: number | null;
+    comment?: string;
+    isRated?: boolean;
+    ratedAt?: string | null;
 }

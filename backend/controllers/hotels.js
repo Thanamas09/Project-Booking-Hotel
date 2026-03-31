@@ -1,11 +1,15 @@
 const Hotel = require("../models/Hotel");
 const Appointment = require("../models/Appoinment");
+const mongoose = require("mongoose");
 
 const recalculateHotelRating = async (hotelId) => {
+    const normalizedHotelId = new mongoose.Types.ObjectId(hotelId.toString());
+
     const stats = await Appointment.aggregate([
         {
             $match: {
-                hotel: Hotel.db.base.Types.ObjectId.createFromHexString(hotelId.toString()),
+                hotel: normalizedHotelId,
+                isRated: true,
                 rating: { $gte: 1, $lte: 5 }
             }
         },
@@ -147,12 +151,12 @@ exports.deleteHotel = async (req, res, next) => {
     }
 };
 
-//@desc     Add rating score
-//@route    POST /api/v1/hotels/:id/rate
-//@access   Private (user only)
+// @desc    Add rating score
+// @route   POST /api/v1/hotels/:id/rate
+// @access  Private (user only)
 exports.addRating = async (req, res, next) => {
     try {
-        const { rating, comment } = req.body;
+        const { rating, comment = "", appointmentId } = req.body;
         const hotelId = req.params.id;
         const userId = req.user.id;
 
@@ -160,6 +164,13 @@ exports.addRating = async (req, res, next) => {
             return res.status(403).json({
                 success: false,
                 message: "Only users can rate hotels"
+            });
+        }
+
+        if (!appointmentId) {
+            return res.status(400).json({
+                success: false,
+                message: "appointmentId is required"
             });
         }
 
@@ -179,24 +190,40 @@ exports.addRating = async (req, res, next) => {
             });
         }
 
-        const current = new Date();
-
-        const appointment = await Appointment.findOne({
-            user: userId,
-            hotel: hotelId,
-            checkoutDate: { $lt: current },
-            rating: { $exists: false }
-        }).sort({ checkoutDate: -1 });
+        const appointment = await Appointment.findById(appointmentId);
 
         if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: "Appointment not found"
+            });
+        }
+
+        if (appointment.user.toString() !== userId.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "You can only rate your own appointment"
+            });
+        }
+
+        if (appointment.hotel.toString() !== hotelId.toString()) {
             return res.status(400).json({
                 success: false,
-                message: "No completed unrated appointment found for this hotel"
+                message: "This appointment does not belong to this hotel"
+            });
+        }
+
+        if (appointment.isRated || typeof appointment.rating === "number") {
+            return res.status(400).json({
+                success: false,
+                message: "This appointment has already been rated"
             });
         }
 
         appointment.rating = numericRating;
-        appointment.comment = comment;
+        appointment.comment = String(comment).trim();
+        appointment.isRated = true;
+        appointment.ratedAt = new Date();
         await appointment.save();
 
         await recalculateHotelRating(hotelId);

@@ -33,6 +33,8 @@ const sanitizeAppointmentPayload = (payload = {}) => {
     const sanitized = { ...payload };
     delete sanitized.rating;
     delete sanitized.comment;
+    delete sanitized.isRated;
+    delete sanitized.ratedAt;
     return sanitized;
 };
 
@@ -44,7 +46,7 @@ exports.getAppointments = async (req, res, next) => {
     if (req.user.role !== 'admin') {
         query = Appointment.find({ user: req.user.id }).populate({
             path: "hotel",
-            select: "name address tel rating ratingCount"
+            select: "name address tel rating ratingCount province"
         }).populate({
             path: "user",
             select: "name email phone"
@@ -54,7 +56,7 @@ exports.getAppointments = async (req, res, next) => {
             console.log("Hotel ID:", req.query.hotelId);
             query = Appointment.find({ hotel: req.query.hotelId }).populate({
                 path: "hotel",
-                select: "name address tel rating ratingCount"
+                select: "name address tel rating ratingCount province"
             }).populate({
                 path: "user",
                 select: "name email phone"
@@ -62,7 +64,7 @@ exports.getAppointments = async (req, res, next) => {
         } else {
             query = Appointment.find().populate({
                 path: "hotel",
-                select: "name address tel rating ratingCount"
+                select: "name address tel rating ratingCount province"
             }).populate({
                 path: "user",
                 select: "name email phone"
@@ -70,7 +72,7 @@ exports.getAppointments = async (req, res, next) => {
         }
     }
     try {
-        const appointments = await query;
+        const appointments = await query.sort({ checkoutDate: -1, createdAt: -1 });
         res.status(200).json({ success: true, count: appointments.length, data: appointments });
     } catch (err) {
         console.log(err);
@@ -103,7 +105,7 @@ exports.getAppointment = async (req, res, next) => {
 };
 
 // @desc Create an appointment
-// @route POST /api/v1/hotels/:id/appointments
+// @route POST /api/v1/appointments/:id
 // @access Private
 exports.addAppointment = async (req, res, next) => {
     try {
@@ -155,6 +157,10 @@ exports.updateAppointment = async (req, res, next) => {
             return res.status(401).json({ success: false, message: "User not authorized to update this appointment" });
         }
 
+        if (appointment.checkoutDate <= new Date()) {
+            return res.status(400).json({ success: false, message: "Cannot update appointment after checkout" });
+        }
+
         if (req.body.checkinDate || req.body.checkoutDate) {
             let newCheckIn = req.body.checkinDate ? req.body.checkinDate : appointment.checkinDate;
             let newCheckOut = req.body.checkoutDate ? req.body.checkoutDate : appointment.checkoutDate;
@@ -191,7 +197,7 @@ exports.deleteAppointment = async (req, res, next) => {
         }
 
         const hotelId = appointment.hotel;
-        const hadRating = typeof appointment.rating === "number";
+        const hadRating = appointment.isRated || typeof appointment.rating === "number";
 
         await appointment.deleteOne();
 

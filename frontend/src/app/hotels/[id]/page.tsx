@@ -13,7 +13,6 @@ import {
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Rating from "@mui/material/Rating"
-import { useSession } from "next-auth/react"
 
 const hotelImages: Record<string, string> = {
   "Phuket Beach Paradise": "/img_hotel/Phuket Beach Paradise.png",
@@ -35,18 +34,12 @@ export default function HotelDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-    const { data: session } = useSession()
   const { id } = use(params)
 
   const [hotelDetail, setHotelDetail] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
-  const [userRating, setUserRating] = useState<number | null>(null)
-  const [submitted, setSubmitted] = useState(false)
-
   const router = useRouter()
-
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -62,47 +55,6 @@ export default function HotelDetailPage({
     fetchDetail()
   }, [id])
 
-  const handleSubmitRating = async () => {
-    
-  try {
-    const token = session?.user?.token
-
-    if (!token) {
-      alert("Please login first")
-      return
-    }
-
-    const res = await fetch(
-      `${BACKEND_URL}/api/v1/hotels/${id}/rate`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          rating: userRating
-        })
-      }
-    )
-
-    const data = await res.json()
-
-    if (!res.ok) {
-      console.log("Backend error:", data)
-      alert(data.message || "Submit rating failed")
-      return
-    }
-
-    setHotelDetail(data.data)
-    setSubmitted(true)
-
-  } catch (err) {
-    console.log("Fetch error:", err)
-  }
-}
-
-  // loading
   if (loading)
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#F9F6EE]">
@@ -138,20 +90,18 @@ export default function HotelDetailPage({
             />
 
             <p className="text-[#D4AF37] text-sm font-serif mt-1">
-              {hotelDetail.rating?.toFixed(1)} / 5.0
+              {(hotelDetail.rating || 0).toFixed(1)} / 5.0
             </p>
 
             <p className="text-xs text-gray-400">
-              ({hotelDetail.ratingCount} reviews)
+              ({hotelDetail.ratingCount || 0} reviews)
             </p>
           </div>
         </Box>
 
         <div className="mb-12">
           <img
-            src={
-              hotelImages[hotelDetail.name] || "/img/default.jpg"
-            }
+            src={hotelImages[hotelDetail.name] || "/img/default.jpg"}
             alt={hotelDetail.name}
             className="w-full h-[400px] object-cover rounded-[30px]"
           />
@@ -218,7 +168,7 @@ export default function HotelDetailPage({
               </section>
             </div>
 
-            <div className="flex flex-col items-center bg-[#FDFBF7] rounded-3xl p-8">
+            <div className="flex flex-col items-center bg-[#FDFBF7] rounded-3xl p-8 gap-4">
               <Typography className="font-serif italic mb-2">
                 Reservation
               </Typography>
@@ -239,6 +189,10 @@ export default function HotelDetailPage({
                 </Button>
               </Link>
 
+              <Typography className="text-center text-sm text-gray-500">
+                Rating is available in <b>My Reservations</b> after checkout.
+              </Typography>
+
               <Button
                 onClick={() => router.back()}
                 className="mt-4 text-gray-400 text-xs"
@@ -248,45 +202,6 @@ export default function HotelDetailPage({
             </div>
           </div>
         </Paper>
-
-        <Box className="mt-16 flex flex-col items-center gap-4">
-          <Typography className="text-[#D4AF37] font-serif text-xs uppercase tracking-[0.3em] font-bold">
-            Rate This Sanctuary
-          </Typography>
-
-          <Rating
-            value={userRating}
-            onChange={(e, newValue) => setUserRating(newValue)}
-            max={5}
-            precision={1}
-            sx={{
-              fontSize: "2.5rem",
-              color: "#D4AF37",
-              "& .MuiRating-iconEmpty": {
-                color: "#D1D5DB"
-              }
-            }}
-          />
-
-          {userRating && (
-            <p className="text-[#D4AF37] text-sm">
-              You rated: {userRating} / 5
-            </p>
-          )}
-
-          <Button
-            variant="contained"
-            disabled={!userRating || submitted}
-            onClick={handleSubmitRating}
-            sx={{
-              bgcolor: "#D4AF37",
-              borderRadius: "50px",
-              px: 4
-            }}
-          >
-            {submitted ? "Thank you!" : "Submit Rating"}
-          </Button>
-        </Box>
       </Container>
     </main>
   )
