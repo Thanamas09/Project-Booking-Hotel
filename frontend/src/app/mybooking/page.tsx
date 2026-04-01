@@ -102,8 +102,7 @@ export default function MyBookingPage() {
   if (!session?.user?.token || !ratingBooking || !ratingValue) return
 
   try {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/hotels/${ratingBooking.hotel._id}/rate`
-    console.log("Submitting rating to:", url)
+    const url = `http://localhost:5000/api/v1/hotels/${ratingBooking.hotel._id}/rate`
 
     const res = await fetch(url, {
       method: "POST",
@@ -119,7 +118,6 @@ export default function MyBookingPage() {
     })
 
     const text = await res.text()
-    console.log("Raw response:", text)
 
     let data
     try {
