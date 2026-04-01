@@ -22,13 +22,14 @@ export const authOptions: NextAuthOptions = {
                       headers: { Authorization: `Bearer ${authResponse.token}` }
                   });
                   const userData = await userRes.json();
-
+                  console.log(userData)
                   return {
                       id: userData.data._id,
                       name: userData.data.name,
                       email: userData.data.email,
                       token: authResponse.token,
-                      role: userData.data.role
+                      role: userData.data.role,
+                      phone: userData.data.phone
                   } as any;
               }
               return null;
@@ -47,6 +48,7 @@ export const authOptions: NextAuthOptions = {
                 token.email = user.email;
                 token.role = user.role;
                 token.token = user.token;
+                token.phone = user.phone;
             }
             return token;
         },
@@ -57,6 +59,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.email = token.email as string;
                 session.user.role = token.role as string;
                 session.user.token = token.token as string;
+                session.user.phone = token.phone as string;
             }
             return session;
         }

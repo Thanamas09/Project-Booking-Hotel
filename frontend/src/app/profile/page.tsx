@@ -24,7 +24,7 @@ export default function ProfilePage() {
   if (!session) {
     return <div className="text-center py-20">Please login</div>
   }
-
+  console.log(useSession())
   return (
     <main className="min-h-screen bg-[#F9F6EE] py-20">
       <Container maxWidth="sm">
